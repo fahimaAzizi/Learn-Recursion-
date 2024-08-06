@@ -78,70 +78,64 @@ input {
   font-weight: bold;
 }
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<js>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-const getMean = (array) => array.reduce((acc, el) => acc + el, 0) / array.length;
+const isEven = num => num % 2 === 0;
+const sum = nums => nums.reduce((acc, el) => acc + el, 0);
+const average = nums => sum(nums) / nums.length;
 
-const getMedian = (array) => {
-  const sorted = array.slice().sort((a, b) => a - b);  // Make a shallow copy and sort it
-  const median =
-    sorted.length % 2 === 0
-      ? getMean([sorted[sorted.length / 2], sorted[sorted.length / 2 - 1]])
-      : sorted[Math.floor(sorted.length / 2)];
-  return median;
+const median = nums => {
+  const sorted = nums.slice().sort((a, b) => a - b);
+  const length = sorted.length;
+  const middle = length / 2 - 1;
+  return isEven(length)
+    ? average([sorted[middle], sorted[middle + 1]])
+    : sorted[Math.ceil(middle)];
 }
 
-const getMode = (array) => {
-  const counts = {};
-  array.forEach((el) => {
-    counts[el] = (counts[el] || 0) + 1;
-  })
-  if (new Set(Object.values(counts)).size === 1) {
-    return null;
+const spreadsheetFunctions = {
+  sum,
+  average,
+  median
+}
+
+const range = (start, end) => Array(end - start + 1).fill(start).map((element, index) => element + index);
+const charRange = (start, end) => range(start.charCodeAt(0), end.charCodeAt(0)).map(code => String.fromCharCode(code));
+
+const evalFormula = (x, cells) => {
+  const idToText = id => cells.find(cell => cell.id === id).value;
+  const rangeRegex = /([A-J])([1-9][0-9]?):([A-J])([1-9][0-9]?)/gi;
+  const rangeFromString = (num1, num2) => range(parseInt(num1), parseInt(num2));
+  const elemValue = num => character => idToText(character + num);
+  const addCharacters = character1 => character2 => num => charRange(character1, character2).map(elemValue(num));
+  const rangeExpanded = x.replace(rangeRegex, (match) => {});
+}
+
+window.onload = () => {
+  const container = document.getElementById("container");
+  const createLabel = (name) => {
+    const label = document.createElement("div");
+    label.className = "label";
+    label.textContent = name;
+    container.appendChild(label);
   }
-  const highest = Object.keys(counts).sort(
-    (a, b) => counts[b] - counts[a]
-  )[0];
-  const mode = Object.keys(counts).filter(
-    (el) => counts[el] === counts[highest]
-  );
-  return mode.join(", ");
+  const letters = charRange("A", "J");
+  letters.forEach(createLabel);
+  range(1, 99).forEach(number => {
+    createLabel(number);
+    letters.forEach(letter => {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.id = letter + number;
+      input.ariaLabel = letter + number;
+      input.onchange = update;
+      container.appendChild(input);
+    })
+  })
 }
 
-const getRange = (array) => {
-  return Math.max(...array) - Math.min(...array);
-}
+const update = event => {
+  const element = event.target;
+  const value = element.value.replace(/\s/g, "");
+  if (!value.includes(element.id) && value.startsWith('=')) {
 
-const getVariance = (array) => {
-  const mean = getMean(array);
-  const variance = array.reduce((acc, el) => {
-    const difference = el - mean;
-    const squared = difference ** 2;
-    return acc + squared;
-  }, 0) / array.length;
-  return variance;
-}
-
-const getStandardDeviation = (array) => {
-  const variance = getVariance(array);
-  const standardDeviation = Math.sqrt(variance);
-  return standardDeviation;
-}
-
-const calculate = () => {
-  const value = document.querySelector("#numbers").value;
-  const array = value.split(/,\s*/g);
-  const numbers = array.map(el => Number(el)).filter(el => !isNaN(el));
-  
-  const mean = getMean(numbers);
-  const median = getMedian(numbers);
-  const mode = getMode(numbers);
-  const range = getRange(numbers);
-  const variance = getVariance(numbers);
-  const standardDeviation = getStandardDeviation(numbers);
-
-  document.querySelector("#mean").textContent = mean;
-  document.querySelector("#median").textContent = median;
-  document.querySelector("#mode").textContent = mode;
-  document.querySelector("#range").textContent = range;
-  document.querySelector("#variance").textContent = variance;
-  document.querySelector("#standardDeviation").textContent = standardDeviation;
+  }
 }
